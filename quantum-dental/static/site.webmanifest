@@ -1,0 +1,9 @@
+{
+  "name": "Quantum Dental Clinic & Implant Center",
+  "short_name": "Quantum Dental",
+  "start_url": "/",
+  "display": "browser",
+  "background_color": "#FAF5EE",
+  "theme_color": "#FAF5EE",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

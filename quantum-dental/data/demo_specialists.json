@@ -1,0 +1,38 @@
+{
+  "_readme": "DEVELOPMENT-ONLY demonstration data. Loaded only when DEMO_DATA=1. These are not real people and are labelled 'Demo' everywhere they appear. Never enable DEMO_DATA on the public site.",
+  "specialists": [
+    {
+      "id": "demo-implant",
+      "name": "Demo Specialist A",
+      "title": "Placeholder profile",
+      "specialty": "Implant consultations (demo)",
+      "qualifications": [],
+      "bio": "Demonstration profile used to test the specialist directory and booking flow. Replace with a verified clinic dentist before launch.",
+      "appointment_types": ["Consultation", "Follow-up"],
+      "photo": null,
+      "demo": true
+    },
+    {
+      "id": "demo-general",
+      "name": "Demo Specialist B",
+      "title": "Placeholder profile",
+      "specialty": "General dentistry (demo)",
+      "qualifications": [],
+      "bio": "Demonstration profile used to test the specialist directory and booking flow. Replace with a verified clinic dentist before launch.",
+      "appointment_types": ["Check-up", "Consultation"],
+      "photo": null,
+      "demo": true
+    },
+    {
+      "id": "demo-ortho",
+      "name": "Demo Specialist C",
+      "title": "Placeholder profile",
+      "specialty": "Orthodontic consultations (demo)",
+      "qualifications": [],
+      "bio": "Demonstration profile used to test the specialist directory and booking flow. Replace with a verified clinic dentist before launch.",
+      "appointment_types": ["Consultation"],
+      "photo": null,
+      "demo": true
+    }
+  ]
+}

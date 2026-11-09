@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Staff dashboard — Quantum Dental</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Playfair+Display:wght@400;500&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="/static/css/styles.css">
+  <link rel="stylesheet" href="/static/admin/admin.css">
+</head>
+<body class="admin">
+  <header class="admin-top">
+    <div class="container admin-top__inner">
+      <a class="brand" href="/admin/">
+        <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 34V18a12 12 0 0 1 24 0v16"/><path d="M14 34V19a6 6 0 0 1 12 0v15"/><path d="M4 34h32"/></svg>
+        <span class="brand__text"><span class="brand__name">Quantum Dental</span><span class="brand__sub">Staff dashboard</span></span>
+      </a>
+      <nav class="admin-tabs" aria-label="Dashboard sections" data-tabs hidden>
+        <a href="#/appointments" data-tab="appointments">Appointments</a>
+        <a href="#/messages" data-tab="messages">Messages</a>
+        <a href="#/email" data-tab="email">Email</a>
+      </nav>
+      <div class="admin-top__actions">
+        <a class="btn btn--ghost btn--sm" href="/">View site</a>
+        <button type="button" class="btn btn--dark btn--sm" data-logout hidden>Log out</button>
+      </div>
+    </div>
+  </header>
+  <main id="admin-main" class="container admin-main" tabindex="-1"></main>
+  <script type="module" src="/static/admin/admin.js"></script>
+</body>
+</html>
