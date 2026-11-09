@@ -9,6 +9,9 @@ const FALLBACK_CONFIG = {
   reasons: [{ id: "checkup", label: "Check-up or cleaning" }, { id: "pain", label: "Tooth pain or discomfort" }, { id: "consultation", label: "Consultation about a treatment" }, { id: "second-opinion", label: "Second opinion" }, { id: "follow-up", label: "Follow-up visit" }, { id: "other", label: "Something else" }],
   times: Array.from({ length: 18 }, (_, i) => `${String(9 + Math.floor(i / 2)).padStart(2, "0")}:${i % 2 ? "30" : "00"}`),
   timezone: "Europe/Belgrade", demo: false, draftBanner: true, routes: {},
+  // Used on static hosting (e.g. Vercel) where the Python server isn't running:
+  formsubmit: { to: "ajanuzi28@kla.education", cc: "ekelmendi27@kla.education,dramaxhiku27@kla.education,ashatrolli27@kla.education" },
+  static: true,
 };
 
 const ROUTES = [
@@ -188,7 +191,7 @@ document.fonts?.ready.then(moveIndicator);
 (async function boot() {
   try {
     const res = await fetch("/api/site-config", { credentials: "same-origin" });
-    if (res.ok) config = await res.json();
+    if (res.ok && (res.headers.get("content-type") || "").includes("json")) config = await res.json();
   } catch { /* use fallback; forms will report errors honestly on submit */ }
   initBanner();
   await render({ focus: false });

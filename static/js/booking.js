@@ -1,6 +1,6 @@
 /* Multi-step appointment request. Preferred date/time only — never a confirmed reservation. */
 import { TREATMENTS } from "./content.js";
-import { esc, icon, photo, $, $$, api, newKey, fieldError, validEmail, validPhone, fmtDate, clinicNow, toast } from "./ui.js";
+import { esc, icon, photo, $, $$, api, newKey, fieldError, validEmail, validPhone, fmtDate, clinicNow, toast, sendFormSubmit, localRef } from "./ui.js";
 
 const STEPS = ["Dentist", "Date & time", "Your details", "Review", "Submitted"];
 const pad = (n) => String(n).padStart(2, "0");
@@ -354,11 +354,26 @@ export function booking(ctx) {
         $("[data-back]", body).disabled = true;
         $("[data-submit-alert]", body).innerHTML = "";
         try {
-          const res = await api("/api/book-appointment", { method: "POST", body: {
+          const res = cfg.static ? {
+            ok: true, created: true, ref: localRef("QD"), status: "pending", date: st.date, time: st.time,
+            specialist: { id: st.specialistId, name: spName(st.specialistId) }, email: {},
+          } : await api("/api/book-appointment", { method: "POST", body: {
             idempotencyKey: st.key, specialistId: st.specialistId, date: st.date, time: st.time,
             name: st.name, email: st.email, phone: st.phone, reason: st.reason, message: st.message,
             traveling: st.traveling, consent: st.consent, website: st.hp || "", elapsedMs: Math.round(performance.now() - st.started),
           } });
+          if (cfg.formsubmit && res.created) {
+            const status = await sendFormSubmit(cfg.formsubmit, {
+              Reference: res.ref, Patient: st.name, Phone: st.phone, Dentist: res.specialist.name,
+              "Preferred date": fmtDate(res.date), "Preferred time": res.time, Reason: reasonLabel(st.reason),
+              Travelling: st.traveling ? "Yes" : "No", Message: st.message || "-", Status: "Pending - please contact the patient to confirm",
+            }, {
+              subject: `New appointment request ${res.ref} - ${res.date} ${res.time}`,
+              replyTo: st.email,
+              autoresponse: `Dear ${st.name}, thank you for contacting Quantum Dental Clinic & Implant Center. We received your appointment request ${res.ref} for ${fmtDate(res.date)} at ${res.time} (${res.specialist.name}). This is a request, not a confirmed appointment - the clinic will contact you to confirm. To change or cancel, call +383 49 536 944.`,
+            });
+            res.email = { patient: status === "sent" ? "fs_sent" : "failed", clinic: status === "sent" ? "fs_sent" : "failed" };
+          }
           st.result = res;
           st.submitting = false;
           render();
@@ -385,6 +400,7 @@ export function booking(ctx) {
       function emailText(status, who) {
         if (who === "patient") return {
           accepted: ["ok", `Sent to ${st.email}. Our mail server accepted it — if it doesn't arrive, check your spam folder.`],
+          fs_sent: ["ok", `A confirmation of your request is on its way to ${st.email}. If it doesn't arrive, check your spam folder.`],
           outbox: ["warn", "Test mode — the acknowledgement was captured on the server and not sent."],
           not_configured: ["warn", "Not sent — email isn't set up yet. Please keep your reference number."],
           failed: ["error", "We couldn't send your acknowledgement email. Please keep your reference number."],
@@ -392,6 +408,7 @@ export function booking(ctx) {
         }[status] || ["warn", "Unknown"];
         return {
           accepted: ["ok", "The clinic team has been notified."],
+          fs_sent: ["ok", "The clinic team has been notified by email."],
           outbox: ["warn", "Test mode — clinic notification captured on the server."],
           not_configured: ["warn", "Saved for the clinic team; email notification isn't set up yet."],
           failed: ["warn", "Saved for the clinic team; the email notification couldn't be sent."],

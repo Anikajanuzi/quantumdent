@@ -86,7 +86,7 @@ class Config:
 
     @property
     def email_ready(self) -> bool:
-        if self.email_backend == "outbox":
+        if self.email_backend in ("outbox", "formsubmit"):
             return True
         if self.email_backend == "smtp":
             return self.smtp_configured

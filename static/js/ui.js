@@ -312,3 +312,29 @@ export function clinicNow(tz) {
     .formatToParts(new Date()).map((p) => [p.type, p.value]));
   return { date: `${parts.year}-${parts.month}-${parts.day}`, time: `${parts.hour === "24" ? "00" : parts.hour}:${parts.minute}` };
 }
+
+/* ---------- FormSubmit (simple email relay, https://formsubmit.co) ----------
+ * Used when the server runs with EMAIL_BACKEND=formsubmit. The first message sends an
+ * activation email to the main address — click "Activate Form" once, then all messages arrive. */
+export async function sendFormSubmit(fs, fields, { subject, replyTo, autoresponse } = {}) {
+  if (!fs?.to) return "skipped";
+  const body = { ...fields, _subject: subject, _template: "table", _captcha: "false" };
+  if (fs.cc) body._cc = fs.cc;
+  if (replyTo) { body.email = replyTo; body._replyto = replyTo; }
+  if (autoresponse) body._autoresponse = autoresponse;
+  try {
+    const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(fs.to).replace("%40", "@")}`, {
+      method: "POST", headers: { "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    return res.ok && String(data.success) === "true" ? "sent" : "failed";
+  } catch { return "failed"; }
+}
+
+/* Reference number for static hosting (no server): QD-YYMMDD-XXXXX */
+export function localRef(prefix) {
+  const d = new Date(), p = (n) => String(n).padStart(2, "0");
+  const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", a = new Uint8Array(5);
+  crypto.getRandomValues(a);
+  return `${prefix}-${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}-${[...a].map((x) => abc[x % abc.length]).join("")}`;
+}

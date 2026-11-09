@@ -1,0 +1,7 @@
+.env
+var/
+__pycache__/
+*.pyc
+tests/artifacts/
+.venv/
+admin-password.txt

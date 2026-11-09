@@ -135,6 +135,8 @@ class Mailer:
         return rcpts
 
     def send_appointment_emails(self, appt: dict, specialist_name: str, reason_label: str) -> dict:
+        if self.cfg.email_backend == "formsubmit":  # the browser sends via FormSubmit
+            return {"patient": "formsubmit", "clinic": "formsubmit"}
         review_url = f"{self.cfg.site_url}/admin/#/appointments/{appt['ref']}"
         jobs = []
         s, t, hm = templates.patient_ack(appt, specialist_name)
@@ -148,6 +150,8 @@ class Mailer:
         return self.summary(appt["ref"])
 
     def send_contact_email(self, msg: dict) -> dict:
+        if self.cfg.email_backend == "formsubmit":
+            return {"patient": None, "clinic": "formsubmit"}
         review_url = f"{self.cfg.site_url}/admin/#/messages/{msg['ref']}"
         s, t, hm = templates.contact_notify(msg, review_url)
         jobs = [(msg["ref"], "contact_notify", r, self.build(r, s, t, hm, msg["email"]))

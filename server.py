@@ -21,13 +21,13 @@ from http.cookies import SimpleCookie
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
-from zoneinfo import ZoneInfo
 
 from app import content, templates
 from app.config import BASE_DIR, Config, load_config
 from app.db import Database
 from app.mailer import Mailer
 from app.security import AdminSessions, RateLimiter
+from app.tz import get_zone
 from app.validation import ValidationError, check_spam, validate_booking, validate_contact
 
 STATIC = BASE_DIR / "static"
@@ -36,7 +36,7 @@ REF_ALPHABET = "".join(c for c in string.ascii_uppercase + string.digits if c no
 APPT_STATUSES = {"pending", "contacted", "confirmed", "declined", "cancelled"}
 
 CSP = ("default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; "
-       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; "
+       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://formsubmit.co; "
        "frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'")
 PREVIEW_CSP = "default-src 'none'; style-src 'unsafe-inline'; img-src data:; frame-ancestors 'self'"
 
@@ -56,7 +56,7 @@ class App:
         self.index_template = (STATIC / "index.html").read_text(encoding="utf-8")
 
     def new_ref(self, prefix: str) -> str:
-        day = datetime.now(ZoneInfo(self.cfg.clinic_timezone)).strftime("%y%m%d")
+        day = datetime.now(get_zone(self.cfg.clinic_timezone)).strftime("%y%m%d")
         return f"{prefix}-{day}-{''.join(secrets.choice(REF_ALPHABET) for _ in range(5))}"
 
     def route_meta(self, path: str) -> tuple[str, str, int]:

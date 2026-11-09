@@ -5,7 +5,8 @@ from __future__ import annotations
 import re
 import unicodedata
 from datetime import date, datetime, timedelta
-from zoneinfo import ZoneInfo
+
+from .tz import get_zone
 
 EMAIL_RE = re.compile(r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
                       r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$")
@@ -105,7 +106,7 @@ def validate_booking(payload: dict, *, specialist_ids: set[str], reason_ids: set
     elif reason not in reason_ids:
         errors["reason"] = "Please choose a reason from the list."
 
-    zone = ZoneInfo(tz)
+    zone = get_zone(tz)
     now = now or datetime.now(zone)
     today = now.date()
     raw_date = clean_text(payload.get("date"), 10)

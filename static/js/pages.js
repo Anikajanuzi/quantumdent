@@ -2,7 +2,7 @@
 import { TREATMENTS, CONSULTATION_STEPS, GALLERY, PHOTOS, RESULTS, PRICES, FAQ_TRAVEL, FAQ_BOOKING } from "./content.js";
 import {
   esc, icon, photo, placeholderInner, portraitPlaceholder, accordion, initAccordions, openLightbox,
-  compareSlider, initCompare, $, $$, api, newKey, fieldError, validEmail, toast,
+  compareSlider, initCompare, $, $$, api, newKey, fieldError, validEmail, toast, sendFormSubmit, localRef,
 } from "./ui.js";
 
 const arrow = icon("arrow", "icon-arrow");
@@ -477,11 +477,11 @@ export function contact(ctx) {
         </form>
       </div>
     </div></section>`,
-    mount(root) { mountContactForm(root); },
+    mount(root) { mountContactForm(root, ctx); },
   };
 }
 
-function mountContactForm(root) {
+function mountContactForm(root, ctx) {
   const form = $("[data-contact-form]", root);
   const card = $("[data-contact-card]", root);
   const alertBox = $("[data-form-alert]", form);
@@ -511,11 +511,17 @@ function mountContactForm(root) {
     const btn = $("button[type=submit]", form);
     btn.classList.add("is-loading"); btn.disabled = true; btn.setAttribute("aria-busy", "true");
     try {
-      const res = await api("/api/contact", { method: "POST", body: {
+      const res = ctx.config.static ? { ok: true, created: true, ref: localRef("QM"), email: {} } : await api("/api/contact", { method: "POST", body: {
         idempotencyKey: key, name: form.elements.name.value, email: form.elements.email.value,
         subject: form.elements.subject.value, message: form.elements.message.value,
         website: form.elements.website.value, elapsedMs: Math.round(performance.now() - started),
       } });
+      if (ctx.config.formsubmit && res.created) {
+        const fsStatus = await sendFormSubmit(ctx.config.formsubmit, {
+          Reference: res.ref, Name: form.elements.name.value, Subject: form.elements.subject.value, Message: form.elements.message.value,
+        }, { subject: `Website message ${res.ref}: ${form.elements.subject.value}`, replyTo: form.elements.email.value });
+        res.email = { clinic: fsStatus === "sent" ? "accepted" : "failed" };
+      }
       const delivered = ["accepted", "outbox"].includes(res.email?.clinic);
       card.innerHTML = `<div class="confirm" tabindex="-1">
         <span class="confirm__icon">${icon("check")}</span>

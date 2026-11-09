@@ -110,6 +110,8 @@ def public_site_config(cfg: Config) -> dict:
         "reasons": VISIT_REASONS,
         "times": PREFERRED_TIMES,
         "timezone": cfg.clinic_timezone,
+        "formsubmit": ({"to": cfg.clinic_notify_emails[0], "cc": ",".join(cfg.clinic_notify_emails[1:])}
+                       if cfg.email_backend == "formsubmit" and cfg.clinic_notify_emails else None),
         "demo": cfg.demo_data,
         "draftBanner": cfg.draft_banner,
         "routes": {k: {"title": t, "description": d} for k, (t, d) in ROUTES.items()},
