@@ -3,6 +3,6 @@
   "rewrites": [
     { "source": "/favicon.svg", "destination": "/static/favicon.svg" },
     { "source": "/site.webmanifest", "destination": "/static/site.webmanifest" },
-    { "source": "/((?!static/).*)", "destination": "/index.html" }
+    { "source": "/((?!static/|api/).*)", "destination": "/index.html" }
   ]
 }

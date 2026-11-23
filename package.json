@@ -1,0 +1,7 @@
+{
+  "name": "quantum-dental",
+  "private": true,
+  "description": "Quantum Dental Clinic & Implant Center website",
+  "engines": { "node": ">=18" },
+  "dependencies": { "nodemailer": "^6.9.16" }
+}

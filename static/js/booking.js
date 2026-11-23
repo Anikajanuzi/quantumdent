@@ -1,6 +1,6 @@
 /* Multi-step appointment request. Preferred date/time only — never a confirmed reservation. */
 import { TREATMENTS } from "./content.js";
-import { esc, icon, photo, $, $$, api, newKey, fieldError, validEmail, validPhone, fmtDate, clinicNow, toast, sendFormSubmit, localRef } from "./ui.js";
+import { esc, icon, photo, $, $$, api, newKey, fieldError, validEmail, validPhone, fmtDate, clinicNow, toast, sendFormSubmit, localRef, sendViaEmailFunction } from "./ui.js";
 
 const STEPS = ["Dentist", "Date & time", "Your details", "Review", "Submitted"];
 const pad = (n) => String(n).padStart(2, "0");
@@ -354,7 +354,16 @@ export function booking(ctx) {
         $("[data-back]", body).disabled = true;
         $("[data-submit-alert]", body).innerHTML = "";
         try {
-          const res = cfg.static ? {
+          let viaFunction = null;
+          if (cfg.static) {
+            viaFunction = await sendViaEmailFunction({
+              type: "booking", name: st.name, email: st.email, phone: st.phone, dentist: spName(st.specialistId),
+              reason: st.reason, date: st.date, time: st.time, message: st.message, traveling: st.traveling,
+              consent: st.consent, website: st.hp || "", elapsedMs: Math.round(performance.now() - st.started),
+            });
+          }
+          const res = viaFunction ? { ...viaFunction, created: false, specialist: { id: st.specialistId, name: spName(st.specialistId) } }
+          : cfg.static ? {
             ok: true, created: true, ref: localRef("QD"), status: "pending", date: st.date, time: st.time,
             specialist: { id: st.specialistId, name: spName(st.specialistId) }, email: {},
           } : await api("/api/book-appointment", { method: "POST", body: {
@@ -409,6 +418,7 @@ export function booking(ctx) {
         return {
           accepted: ["ok", "The clinic team has been notified."],
           fs_sent: ["ok", "The clinic team has been notified by email."],
+          partial: ["warn", "Some of the clinic team were notified; one email couldn't be sent."],
           outbox: ["warn", "Test mode — clinic notification captured on the server."],
           not_configured: ["warn", "Saved for the clinic team; email notification isn't set up yet."],
           failed: ["warn", "Saved for the clinic team; the email notification couldn't be sent."],

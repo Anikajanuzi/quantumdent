@@ -2,7 +2,7 @@
 import { TREATMENTS, CONSULTATION_STEPS, GALLERY, PHOTOS, RESULTS, PRICES, FAQ_TRAVEL, FAQ_BOOKING } from "./content.js";
 import {
   esc, icon, photo, placeholderInner, portraitPlaceholder, accordion, initAccordions, openLightbox,
-  compareSlider, initCompare, $, $$, api, newKey, fieldError, validEmail, toast, sendFormSubmit, localRef,
+  compareSlider, initCompare, $, $$, api, newKey, fieldError, validEmail, toast, sendFormSubmit, localRef, sendViaEmailFunction,
 } from "./ui.js";
 
 const arrow = icon("arrow", "icon-arrow");
@@ -511,7 +511,12 @@ function mountContactForm(root, ctx) {
     const btn = $("button[type=submit]", form);
     btn.classList.add("is-loading"); btn.disabled = true; btn.setAttribute("aria-busy", "true");
     try {
-      const res = ctx.config.static ? { ok: true, created: true, ref: localRef("QM"), email: {} } : await api("/api/contact", { method: "POST", body: {
+      const viaFunction = ctx.config.static ? await sendViaEmailFunction({
+        type: "contact", name: form.elements.name.value, email: form.elements.email.value, subject: form.elements.subject.value,
+        message: form.elements.message.value, website: form.elements.website.value, elapsedMs: Math.round(performance.now() - started),
+      }) : null;
+      const res = viaFunction ? { ...viaFunction, created: false }
+        : ctx.config.static ? { ok: true, created: true, ref: localRef("QM"), email: {} } : await api("/api/contact", { method: "POST", body: {
         idempotencyKey: key, name: form.elements.name.value, email: form.elements.email.value,
         subject: form.elements.subject.value, message: form.elements.message.value,
         website: form.elements.website.value, elapsedMs: Math.round(performance.now() - started),

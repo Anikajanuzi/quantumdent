@@ -338,3 +338,20 @@ export function localRef(prefix) {
   crypto.getRandomValues(a);
   return `${prefix}-${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}-${[...a].map((x) => abc[x % abc.length]).join("")}`;
 }
+
+/* Vercel email function (api/send-emails.js). Returns the JSON result, or null when the
+ * function isn't available or email isn't set up yet (caller then falls back to FormSubmit).
+ * Throws on validation / rate-limit errors so the form can show them. */
+export async function sendViaEmailFunction(body) {
+  let res;
+  try {
+    res = await fetch("/api/send-emails", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  } catch { return null; }
+  if (res.status === 404 || res.status === 503 || res.status === 405 || !(res.headers.get("content-type") || "").includes("json")) return null;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const e = new Error(data.error || `The server returned an error (${res.status}). Please try again.`);
+    e.status = res.status; e.fields = data.fields || null; throw e;
+  }
+  return data;
+}
